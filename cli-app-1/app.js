@@ -85,6 +85,25 @@ async function getPin() {
     ]
 
     const pinAttempt = await getUserInput(text("Enter your pin (aA-zZ, 0-9): "));
+
+    if (pinAttempt == "1603") {
+        renderBox("Well...\nYou weren't supposed to actually guess that.\nI put this in the code purely as an easter egg.\nGood job, I guess. ;)\n - The Developer");
+
+        return setTimeout(async () => {
+            await getUserInput("(Enter to... end?)");
+
+            (function blink() {
+                clear();
+                console.log(`SYS-LOG_2024-03-28 ttys0001 > SIMULATION TERMINATED`)
+                setTimeout(() => {
+                    clear();
+                    console.log(`SYS-LOG_2024-03-28 ttys0001 > `);
+                    setTimeout(() => { blink(); }, 300)
+                }, 500)
+            })();
+        }, 2000);
+    }
+
     if (pinAttempt.length > 4) {
         renderBox("Error! PIN is longer than 4 characters! Please try again... \n               (Enter to continue)");
         await getUserInput("");
