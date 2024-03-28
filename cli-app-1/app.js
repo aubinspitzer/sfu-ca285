@@ -3,6 +3,8 @@ import boxen from "boxen";
 import readline from "readline";
 
 let currentStep = 0;
+let attempts = 0;
+let name = "";
 
 /** Setup */
 const cli = readline.createInterface({
@@ -19,7 +21,7 @@ const boxenOptions = {
 };
 
 function clear() {
-    process.stdout.write ('\u001B[2J\u001B[0;0f');
+    process.stdout.write('\u001B[2J\u001B[0;0f');
 }
 
 function renderBox(message) {
@@ -45,17 +47,17 @@ const steps = [
 ]
 
 function nextStep(delay, stepNumber) {
-    if(stepNumber) currentStep = stepNumber;
+    if (stepNumber) currentStep = stepNumber;
     else currentStep++;
 
-    if(delay) setTimeout(() => {
+    if (delay) setTimeout(() => {
         clear();
-        if(!steps[currentStep]) { console.log("end"); cli.close(); }
+        if (!steps[currentStep]) { console.log("end"); cli.close(); }
         else steps[currentStep]();
-    }, delay*1000);
+    }, delay * 1000);
     else {
         clear();
-        if(!steps[currentStep]) { console.log("end"); cli.close(); }
+        if (!steps[currentStep]) { console.log("end"); cli.close(); }
         else steps[currentStep]();
     }
 }
@@ -63,16 +65,41 @@ function nextStep(delay, stepNumber) {
 /** functions */
 
 async function getName() {
-    const name = await getUserInput(text(`Hello, what is your name?`));
+    name = await getUserInput(text(`Hello, what is your name? `));
     clear();
-    renderBox(`Hello, ${name}!`);
-    nextStep(5);
+    renderBox(`Hello, ${name}! Let's begin...\n${" ".repeat(Math.round((3 + name.length) / 2))}(Enter to continue)`);
+    await getUserInput("");
+    nextStep(0, 1);
 }
 
 async function getPin() {
-    const pinAttempt = await getUserInput(text("Enter your pin:"));
-    renderBox(`${pinAttempt} is incorrect!`);
-    nextStep(5, 1);
+
+    const errMsgs = [
+        `Incorrect! Surprising you made it into high school let alone university, ${name}`,
+        `Wrong... At least you're funny, ${name}... Funny looking.`,
+        "Almost there! If at first you don't succeed, try, try again!",
+        `New High Score! Congrats, ${name}! You've set a new world record for failed attempts.`,
+        "Your pin is incorrect! (look around)",
+        `Come on, ${name}. You didn't think it'd be that easy did you?`,
+        `Tick-Tock. You're running out of time, ${name}.`,
+    ]
+
+    const pinAttempt = await getUserInput(text("Enter your pin (aA-zZ, 0-9): "));
+    if (pinAttempt.length > 4) {
+        renderBox("Error! PIN is longer than 4 characters! Please try again... \n               (Enter to continue)");
+        await getUserInput("");
+        return nextStep(0, 1);
+    }
+    attempts++;
+    if (attempts < 3) renderBox(`${pinAttempt} is incorrect! ${10 - attempts} trys left...`);
+    else if (attempts > 2 && attempts < 6) renderBox(`${pinAttempt} is incorrect! ${Math.round(Math.random() * 3) + attempts} trys left...`);
+    else if (attempts < 9) renderBox(`${pinAttempt} is incorrect! Need a hint?`);
+    else {
+        if (Math.random() < 0.4) renderBox(`${pinAttempt} is incorrect! Need a hint?`);
+        else renderBox(errMsgs[Math.round(Math.random() * errMsgs.length)]);
+    }
+    await getUserInput("");
+    nextStep(0, 1);
 }
 
 clear();
